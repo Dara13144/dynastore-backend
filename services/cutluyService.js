@@ -7,11 +7,11 @@ const { calculateKHQRMD5, generateQRCodeImage } = require('../utils/bakongKhqr')
 /**
  * CutLuy Payment Service (KHQR & Bakong Gateway)
  * API Base: https://cutluy.com/v1/payments
- * Live Key: ck_live_R4T5n4RvJg2FziFWKy1RdjfY_dJCbBAD
+ * Live Key: ck_live_QuVCpMzXMhvf5jUobZ6Z85OtsXpGW_FS
  */
 class CutLuyService {
   constructor() {
-    this.apiKey = process.env.CUTLUY_API_KEY || 'ck_live_R4T5n4RvJg2FziFWKy1RdjfY_dJCbBAD';
+    this.apiKey = process.env.CUTLUY_API_KEY || 'ck_live_QuVCpMzXMhvf5jUobZ6Z85OtsXpGW_FS';
     this.apiUrl = process.env.CUTLUY_API_URL || 'https://cutluy.com/v1/payments';
     this.webhookSecret = process.env.CUTLUY_WEBHOOK_SECRET || '';
   }
@@ -77,10 +77,16 @@ class CutLuyService {
 
       const expiresAt = payData.expires_at ? new Date(payData.expires_at) : new Date(Date.now() + 5 * 60 * 1000);
 
+      let effectiveUserId = userId;
+      if (!effectiveUserId) {
+        const firstUser = await prisma.user.findFirst();
+        effectiveUserId = firstUser ? firstUser.id : 'default-user';
+      }
+
       // Create Payment Record in Database
       const payment = await prisma.payment.create({
         data: {
-          userId: userId || 'system',
+          userId: effectiveUserId,
           orderId: orderId || null,
           amount: formattedAmount,
           currency: payData.currency || currency || 'USD',
@@ -117,7 +123,7 @@ class CutLuyService {
         status: payData.status || 'pending',
         expiresAt: expiresAt,
         expiresInSeconds: Math.max(30, Math.floor((expiresAt.getTime() - Date.now()) / 1000)),
-        merchantName: process.env.CUTLUY_MERCHANT_NAME || 'KV Digital Cinema'
+        merchantName: process.env.CUTLUY_MERCHANT_NAME || 'DYNA STORE'
       };
     } catch (err) {
       console.error('[CutLuy Create Payment Error]', err.response?.data || err.message);

@@ -9,6 +9,8 @@ router.post('/vip-all-access', authenticateToken, orderController.purchaseAllAcc
 router.post('/vip-payment-order', authenticateToken, orderController.createVipPaymentOrder);
 router.get('/my-orders', authenticateToken, orderController.getUserOrders);
 router.get('/my-purchases', authenticateToken, orderController.getUserOrders);
+router.delete('/clear', authenticateToken, orderController.clearAllOrders);
+router.delete('/:id', authenticateToken, orderController.deleteOrder);
 router.get('/:id', authenticateToken, orderController.getOrderById);
 
 module.exports = router;

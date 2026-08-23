@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: kv-digital-cinema-frontend
+    runtime: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        value: https://kravandc-backend.onrender.com/api/v1
+      - key: VITE_SOCKET_URL
+        value: https://kravandc-backend.onrender.com

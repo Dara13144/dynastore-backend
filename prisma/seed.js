@@ -6,21 +6,21 @@ async function main() {
   console.log('🌱 Starting KV Digital Cinema Database Seeding...');
 
   // 1. Create Admin & Test Users
-  const hashedPassword = await bcrypt.hash('Admin@123456', 10);
+  const hashedPassword = await bcrypt.hash('dynastore39w8537q458974', 10);
   const userPassword = await bcrypt.hash('User@123456', 10);
 
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@kvcinema.com' },
+    where: { email: 'dynastore2-904758-39q457@gmai.com' },
     update: {},
     create: {
-      name: 'Super Admin',
-      email: 'admin@kvcinema.com',
+      name: 'DYNA STORE Super Admin',
+      email: 'dynastore2-904758-39q457@gmai.com',
       password: hashedPassword,
       role: 'SUPER_ADMIN',
       emailVerified: true,
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+      avatar: '/logo.png',
       wallet: {
-        create: { balance: 999.00, currency: 'USD' }
+        create: { balance: 9999.00, currency: 'USD' }
       }
     }
   });

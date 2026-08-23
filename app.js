@@ -25,7 +25,12 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(express.json({ limit: '50mb' }));
+app.use(express.json({
+  limit: '50mb',
+  verify: (req, res, buf) => {
+    req.rawBody = buf.toString('utf8');
+  }
+}));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Static uploads folder
@@ -43,7 +48,7 @@ app.use('/api', apiLimiter);
 app.get('/', (req, res) => {
   res.json({
     status: 'online',
-    app: 'KV Digital Cinema API Server',
+    app: 'DYNA STORE API Server',
     version: '1.0.0',
     health: '/api/health',
     endpoints: {
@@ -55,7 +60,7 @@ app.get('/', (req, res) => {
       products: '/api/v1/products',
       podcasts: '/api/v1/podcasts'
     },
-    message: '🎬 KV Digital Cinema Backend Engine is running smoothly!'
+    message: '🛍️ DYNA STORE Backend Engine is running smoothly!'
   });
 });
 
@@ -63,7 +68,7 @@ app.get('/', (req, res) => {
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'online',
-    app: 'KV Digital Cinema API',
+    app: 'DYNA STORE API',
     timestamp: new Date().toISOString()
   });
 });

@@ -345,11 +345,50 @@ const createVipPaymentOrder = async (req, res, next) => {
   }
 };
 
+/**
+ * Clear All Orders for current user
+ */
+const clearAllOrders = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    await prisma.orderItem.deleteMany({
+      where: { order: { userId } }
+    });
+    const result = await prisma.order.deleteMany({
+      where: { userId }
+    });
+    return sendSuccess(res, 'All orders cleared successfully', { count: result.count });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * Delete single order by ID
+ */
+const deleteOrder = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+    await prisma.orderItem.deleteMany({
+      where: { orderId: id }
+    });
+    await prisma.order.deleteMany({
+      where: { id, userId }
+    });
+    return sendSuccess(res, 'Order removed successfully');
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   createOrder,
   getOrderById,
   purchaseMovie,
   purchaseAllAccessPass,
   createVipPaymentOrder,
-  getUserOrders
+  getUserOrders,
+  clearAllOrders,
+  deleteOrder
 };

@@ -14,8 +14,8 @@ async function runHealthCheck() {
 
   // 2. Auth Login Test
   const loginRes = await axios.post(PROXY_URL + '/auth/login', {
-    email: 'admin@kvcinema.com',
-    password: 'Admin@123456'
+    email: 'dynastore2-904758-39q457@gmai.com',
+    password: 'dynastore39w8537q458974'
   });
   console.log('✅ 3. Auth Login (Admin via Proxy):', loginRes.data.success ? 'SUCCESS (JWT Received)' : 'FAILED');
   const token = loginRes.data.data.accessToken || loginRes.data.data.token;

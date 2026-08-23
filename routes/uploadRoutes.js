@@ -30,18 +30,20 @@ const fileFilter = (req, file, cb) => {
   const allowedExts = [
     '.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg',
     '.mp4', '.webm', '.mkv', '.mov', '.m4v', '.avi', '.ts', '.flv',
-    '.mp3', '.wav', '.ogg', '.aac', '.m4a'
+    '.mp3', '.wav', '.ogg', '.aac', '.m4a',
+    '.zip', '.rar', '.7z', '.exe', '.apk', '.iso', '.bin', '.tar', '.gz', '.dmg', '.pkg'
   ];
 
   if (
     file.mimetype.startsWith('image/') ||
     file.mimetype.startsWith('video/') ||
     file.mimetype.startsWith('audio/') ||
+    file.mimetype.startsWith('application/') ||
     allowedExts.includes(ext)
   ) {
     cb(null, true);
   } else {
-    cb(new Error('Supported formats: MP4, WebM, MKV, MOV, MP3, JPG, PNG, WebP'), false);
+    cb(new Error('Supported formats: MP4, MKV, ZIP, RAR, 7Z, EXE, APK, ISO, WebM, MP3, JPG, PNG'), false);
   }
 };
 

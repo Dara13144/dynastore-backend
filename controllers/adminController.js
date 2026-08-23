@@ -461,6 +461,25 @@ const deletePodcast = async (req, res, next) => {
   }
 };
 
+const clearAllPayments = async (req, res, next) => {
+  try {
+    const result = await prisma.payment.deleteMany({});
+    return sendSuccess(res, 'All payments cleared successfully', { count: result.count });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const deletePayment = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    await prisma.payment.delete({ where: { id } });
+    return sendSuccess(res, 'Payment transaction deleted successfully');
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   getAdminStats,
   createMovie,
@@ -474,5 +493,7 @@ module.exports = {
   getUserTransactions,
   updateUserRole,
   getPayments,
-  updatePaymentStatus
+  updatePaymentStatus,
+  clearAllPayments,
+  deletePayment
 };

@@ -17,8 +17,9 @@ router.delete('/podcasts/:id', adminController.deletePodcast);
 router.get('/users', adminController.getUsers);
 router.post('/users/balance', adminController.adjustUserBalance);
 router.get('/users/transactions/:userId', adminController.getUserTransactions);
-router.post('/users/role', adminController.updateUserRole);
 router.get('/payments', adminController.getPayments);
 router.put('/payments/status', adminController.updatePaymentStatus);
+router.delete('/payments/clear', adminController.clearAllPayments);
+router.delete('/payments/:id', adminController.deletePayment);
 
 module.exports = router;
