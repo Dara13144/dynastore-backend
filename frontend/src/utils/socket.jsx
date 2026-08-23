@@ -19,7 +19,7 @@ export const getSocketUrl = () => {
     }
   }
   if (import.meta.env.PROD) {
-    return 'https://kravandc-backend.onrender.com';
+    return 'https://dynastore-backend.onrender.com';
   }
   return window.location.origin;
 };

@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: kv-digital-cinema-frontend
+    name: dynastore-frontend
     runtime: static
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
@@ -10,6 +10,6 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        value: https://kravandc-backend.onrender.com/api/v1
+        value: https://dynastore-backend.onrender.com/api/v1
       - key: VITE_SOCKET_URL
-        value: https://kravandc-backend.onrender.com
+        value: https://dynastore-backend.onrender.com

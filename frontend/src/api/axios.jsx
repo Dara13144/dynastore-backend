@@ -3,7 +3,7 @@ import axios from 'axios';
 const rawApiUrl = import.meta.env.VITE_API_URL;
 const API_BASE_URL = (rawApiUrl && rawApiUrl.trim() !== '')
   ? rawApiUrl.trim()
-  : (import.meta.env.PROD ? 'https://kravandc-backend.onrender.com/api/v1' : '/api/v1');
+  : (import.meta.env.PROD ? 'https://dynastore-backend.onrender.com/api/v1' : '/api/v1');
 
 const api = axios.create({
   baseURL: API_BASE_URL,
