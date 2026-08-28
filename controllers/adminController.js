@@ -129,21 +129,53 @@ const createMovie = async (req, res, next) => {
       }
     });
 
-    // Link Genres if provided
+    // Link Genres safely (support IDs and name strings)
     if (genres && Array.isArray(genres)) {
-      for (const genreId of genres) {
-        await prisma.movieGenre.create({
-          data: { movieId: movie.id, genreId }
-        });
+      for (const item of genres) {
+        if (!item) continue;
+        try {
+          let genreRecord = await prisma.genre.findFirst({
+            where: { OR: [{ id: item }, { name: item }, { slug: item.toLowerCase().replace(/[^a-z0-9]+/g, '-') }] }
+          });
+          if (!genreRecord) {
+            const genreSlug = item.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            genreRecord = await prisma.genre.create({
+              data: { name: item, slug: `${genreSlug}-${Date.now().toString().slice(-4)}` }
+            });
+          }
+          await prisma.movieGenre.upsert({
+            where: { movieId_genreId: { movieId: movie.id, genreId: genreRecord.id } },
+            create: { movieId: movie.id, genreId: genreRecord.id },
+            update: {}
+          });
+        } catch (linkErr) {
+          console.warn('[Genre Link Warning]', linkErr.message);
+        }
       }
     }
 
-    // Link Categories if provided
+    // Link Categories safely (support IDs and name strings)
     if (categories && Array.isArray(categories)) {
-      for (const categoryId of categories) {
-        await prisma.movieCategory.create({
-          data: { movieId: movie.id, categoryId }
-        });
+      for (const item of categories) {
+        if (!item) continue;
+        try {
+          let catRecord = await prisma.category.findFirst({
+            where: { OR: [{ id: item }, { name: item }, { slug: item.toLowerCase().replace(/[^a-z0-9]+/g, '-') }] }
+          });
+          if (!catRecord) {
+            const catSlug = item.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            catRecord = await prisma.category.create({
+              data: { name: item, slug: `${catSlug}-${Date.now().toString().slice(-4)}` }
+            });
+          }
+          await prisma.movieCategory.upsert({
+            where: { movieId_categoryId: { movieId: movie.id, categoryId: catRecord.id } },
+            create: { movieId: movie.id, categoryId: catRecord.id },
+            update: {}
+          });
+        } catch (linkErr) {
+          console.warn('[Category Link Warning]', linkErr.message);
+        }
       }
     }
 

@@ -5,12 +5,15 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "build": "prisma generate && prisma db push && node prisma/seed.js",
+    "build": "npx prisma generate && npx prisma db push && node prisma/seed.js",
+    "db:init": "npx prisma generate && npx prisma db push && node prisma/seed.js",
     "dev": "nodemon -e js,mjs,cjs,json,env server.js",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
+    "prisma:generate": "npx prisma generate",
+    "prisma:push": "npx prisma db push",
+    "prisma:migrate": "npx prisma migrate dev",
     "db:seed": "node prisma/seed.js"
   },
+
   "dependencies": {
     "@prisma/client": "^5.10.2",
     "@supabase/supabase-js": "^2.112.4",
