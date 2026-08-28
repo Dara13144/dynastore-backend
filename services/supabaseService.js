@@ -30,23 +30,40 @@ function isConfigured() {
   return Boolean(url && (anon || service));
 }
 
+let WebSocketImpl;
+try {
+  WebSocketImpl = globalThis.WebSocket || require('ws');
+  if (!globalThis.WebSocket && WebSocketImpl) {
+    globalThis.WebSocket = WebSocketImpl;
+  }
+} catch (e) {
+  // Ignored if WebSocket is already native
+}
+
+function getClientOptions() {
+  const options = {
+    auth: { persistSession: false, autoRefreshToken: false }
+  };
+  if (WebSocketImpl) {
+    options.global = { WebSocket: WebSocketImpl };
+  }
+  return options;
+}
+
 function getSupabaseClient() {
   if (!isConfigured()) return null;
   const url = getSupabaseUrl();
   const key = getSupabaseAnonKey() || getSupabaseServiceRoleKey();
-  return createClient(url, key, {
-    auth: { persistSession: false }
-  });
+  return createClient(url, key, getClientOptions());
 }
 
 function getSupabaseAdmin() {
   if (!isConfigured()) return null;
   const url = getSupabaseUrl();
   const key = getSupabaseServiceRoleKey() || getSupabaseAnonKey();
-  return createClient(url, key, {
-    auth: { persistSession: false }
-  });
+  return createClient(url, key, getClientOptions());
 }
+
 
 /**
  * Ensure storage bucket exists (creates if not found with public read access)

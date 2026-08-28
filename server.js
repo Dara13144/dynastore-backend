@@ -33,8 +33,27 @@ io.on('connection', (socket) => {
 });
 
 const paymentCheckWorker = require('./services/paymentCheckWorker');
+const { PrismaClient } = require('@prisma/client');
+const { execSync } = require('child_process');
+const prisma = new PrismaClient();
 
-server.listen(PORT, () => {
+async function bootstrapDatabase() {
+  try {
+    await prisma.movie.count();
+    console.log('[Database] Schema verified and operational.');
+  } catch (err) {
+    console.log('[Database] Tables missing. Auto-provisioning database schema...');
+    try {
+      execSync('npx prisma db push --skip-generate --accept-data-loss', { stdio: 'inherit' });
+      const seed = require('./prisma/seed');
+      if (typeof seed === 'function') await seed();
+    } catch (syncErr) {
+      console.warn('[Database Sync Notice]', syncErr.message);
+    }
+  }
+}
+
+server.listen(PORT, async () => {
   console.log(`
   ======================================================
    🛍️ DYNA STORE BACKEND SERVER RUNNING 🛍️
@@ -45,6 +64,10 @@ server.listen(PORT, () => {
   ======================================================
   `);
 
+  // Ensure tables exist on boot
+  await bootstrapDatabase();
+
   // Start background payment status checking worker
   paymentCheckWorker.start();
 });
+
