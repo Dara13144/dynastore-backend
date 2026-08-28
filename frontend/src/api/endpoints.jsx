@@ -95,3 +95,16 @@ export const uploadAPI = {
       onUploadProgress: onProgress
     })
 };
+
+export const supabaseAPI = {
+  getStatus: () => api.get('/supabase/status'),
+  getConfig: () => api.get('/supabase/config'),
+  getBuckets: () => api.get('/supabase/buckets'),
+  createBucket: (name, isPublic = true) => api.post('/supabase/buckets/create', { name, isPublic }),
+  uploadFile: (formData, onProgress = null) =>
+    api.post('/supabase/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      onUploadProgress: onProgress
+    })
+};
+

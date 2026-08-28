@@ -20,10 +20,27 @@ app.use(helmet({
   crossOriginResourcePolicy: false
 }));
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5050',
+  'http://localhost:3000',
+  'https://dynastore.xyz',
+  'http://dynastore.xyz',
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
 app.use(cors({
-  origin: '*',
-  credentials: true
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
+    return callback(null, true); // Allow dev and browser requests
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
 }));
+
 
 app.use(express.json({
   limit: '50mb',
@@ -74,8 +91,8 @@ app.get('/api/health', (req, res) => {
 });
 
 const productRoutes = require('./routes/productRoutes');
-
 const uploadRoutes = require('./routes/uploadRoutes');
+const supabaseRoutes = require('./routes/supabaseRoutes');
 
 // CutLuy Webhook Handlers
 const paymentController = require('./controllers/paymentController');
@@ -86,7 +103,9 @@ app.post(
 
 // Mounted Routes
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/v1/products', productRoutes);
+
 app.use('/api/v1/movies', movieRoutes);
 app.use('/api/v1/wallet', walletRoutes);
 app.use('/api/v1/payments', paymentRoutes);
@@ -97,6 +116,7 @@ app.use('/api/v1/podcasts', podcastRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/upload', uploadRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/v1/supabase', supabaseRoutes);
 
 // Global Error Handler
 app.use(errorHandler);

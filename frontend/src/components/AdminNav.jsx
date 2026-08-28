@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShieldAlert, Film, Radio, CreditCard, Users, LayoutDashboard, ArrowLeft } from 'lucide-react';
+import { ShieldAlert, Film, Radio, CreditCard, Users, LayoutDashboard, ArrowLeft, Cloud } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const AdminNav = ({ title, subtitle, actionButton }) => {
@@ -35,6 +35,13 @@ const AdminNav = ({ title, subtitle, actionButton }) => {
       icon: Users,
       color: 'text-purple-400',
       activeBg: 'bg-purple-500 text-white shadow-md font-black'
+    },
+    {
+      name: 'Supabase Cloud & Storage',
+      path: '/admin/supabase',
+      icon: Cloud,
+      color: 'text-cyan-400',
+      activeBg: 'bg-cyan-500 text-black shadow-md font-black'
     }
   ];
 

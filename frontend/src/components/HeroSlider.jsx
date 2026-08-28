@@ -30,12 +30,23 @@ const HeroSlider = ({ movies = [], onOpenTrailer }) => {
           transition={{ duration: 0.8 }}
           className="absolute inset-0"
         >
-          {/* Backdrop Image */}
-          <img
-            src={currentMovie.banner || currentMovie.poster}
-            alt={currentMovie.title}
-            className="w-full h-full object-cover object-center"
-          />
+          {/* Live Motion Video or Image Backdrop */}
+          {currentMovie.slug?.includes('spider') || currentMovie.title?.toLowerCase().includes('spider') ? (
+            <video
+              src="https://motionbgs.com/media/9917/spider-man-at-sunset.960x540.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover object-center scale-105"
+            />
+          ) : (
+            <img
+              src={currentMovie.banner || currentMovie.poster}
+              alt={currentMovie.title}
+              className="w-full h-full object-cover object-center"
+            />
+          )}
 
           {/* Gradients Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-theme-bg via-theme-bg/60 to-transparent" />

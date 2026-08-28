@@ -68,7 +68,28 @@ async function runHealthCheck() {
     revenue: '$' + stats.totalRevenue
   });
 
-  console.log('\n🌟 ALL 12 BACKEND & FRONTEND SUBSYSTEMS ARE 100% OPERATIONAL! 🌟');
+  // 12. Supabase Integration Status
+  const supabaseRes = await axios.get(PROXY_URL + '/supabase/status');
+  console.log('✅ 13. Supabase Cloud System:', {
+    status: supabaseRes.data.data.status,
+    configured: supabaseRes.data.data.configured,
+    defaultBucket: supabaseRes.data.data.details?.defaultBucket
+  });
+
+  // 13. Google Authentication Test
+  const googleRes = await axios.post(PROXY_URL + '/auth/google', {
+    email: 'google_test_user@gmail.com',
+    name: 'Google Test Gamer',
+    googleId: 'g_id_1092837465'
+  });
+  console.log('✅ 14. Google OAuth Login/Register:', {
+    success: googleRes.data.success,
+    user: googleRes.data.data.user.name,
+    email: googleRes.data.data.user.email,
+    balance: '$' + googleRes.data.data.user.balance + ' USD'
+  });
+
+  console.log('\n🌟 ALL 14 BACKEND & FRONTEND SUBSYSTEMS (INCL. GOOGLE AUTH & SUPABASE) ARE 100% OPERATIONAL! 🌟');
 }
 
 runHealthCheck().catch(err => {

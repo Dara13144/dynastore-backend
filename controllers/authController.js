@@ -140,49 +140,90 @@ const login = async (req, res, next) => {
   }
 };
 
+const { verifyGoogleIdToken } = require('../services/googleAuthService');
+
 /**
- * Google OAuth Login / Register
+ * Google OAuth Login / Register Controller
+ * Accepts { credential: "GOOGLE_ID_TOKEN" } or payload
  */
 const googleLogin = async (req, res, next) => {
   try {
-    const { googleId, email, name, avatar } = req.body;
+    let { credential, googleId, email, name, avatar } = req.body;
 
-    if (!email) {
-      return sendError(res, 'Google account email is required');
+    // 1. If real Google ID Token is passed, cryptographically verify it with Google's public certificates
+    if (credential) {
+      try {
+        const verifiedPayload = await verifyGoogleIdToken(credential);
+        email = verifiedPayload.email;
+        name = verifiedPayload.name;
+        googleId = verifiedPayload.googleId;
+        avatar = verifiedPayload.avatar;
+      } catch (verifyErr) {
+        console.warn('[Google Token Verification Error]', verifyErr.message);
+        return res.status(verifyErr.statusCode || 401).json({
+          success: false,
+          code: verifyErr.code || 'INVALID_GOOGLE_CREDENTIAL',
+          message: verifyErr.message || 'Google token validation failed'
+        });
+      }
     }
 
+    if (!email) {
+      return sendError(res, 'Google account email is required', 400);
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+
+    // 2. Find or Create User (prevents duplicate accounts)
     let user = await prisma.user.findUnique({
-      where: { email },
+      where: { email: cleanEmail },
       include: { wallet: true }
     });
 
     if (!user) {
-      // Create new user via Google Register
+      // Register New User with linked Wallet and $50 USD Welcome Bonus
       user = await prisma.user.create({
         data: {
           name: name || 'Google User',
-          email,
+          email: cleanEmail,
           googleId: googleId || `google_${Date.now()}`,
-          avatar: avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+          avatar: avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
           emailVerified: true,
+          role: 'USER',
           wallet: {
             create: {
-              balance: 50.00, // Welcome bonus
+              balance: 50.00,
               currency: 'USD'
             }
           }
         },
         include: { wallet: true }
       });
-    } else if (!user.googleId && googleId) {
-      // Link existing user account with Google ID
+    } else {
+      // Link Google Account to existing user
+      const updateData = { emailVerified: true };
+      if (!user.googleId && googleId) updateData.googleId = googleId;
+      if (avatar && !user.avatar) updateData.avatar = avatar;
+
       user = await prisma.user.update({
         where: { id: user.id },
-        data: { googleId, emailVerified: true },
+        data: updateData,
         include: { wallet: true }
       });
+
+      // Ensure user has a wallet
+      if (!user.wallet) {
+        await prisma.wallet.create({
+          data: { userId: user.id, balance: 50.00, currency: 'USD' }
+        });
+        user = await prisma.user.findUnique({
+          where: { id: user.id },
+          include: { wallet: true }
+        });
+      }
     }
 
+    // 3. Generate Application JWT Session
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
@@ -202,6 +243,7 @@ const googleLogin = async (req, res, next) => {
     next(err);
   }
 };
+
 
 /**
  * Refresh Token

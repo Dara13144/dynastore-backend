@@ -4,14 +4,15 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { sendSuccess, sendError } = require('../utils/response');
+const supabaseService = require('../services/supabaseService');
 
-// Ensure uploads folder exists
+// Ensure local uploads folder exists
 const uploadsDir = path.join(__dirname, '../uploads');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// Multer Storage Configuration
+// Multer Storage Configuration (stores locally first, then can mirror/upload to Supabase)
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, uploadsDir);
@@ -55,7 +56,7 @@ const upload = multer({
 });
 
 // Single File / Video Upload Route: POST /api/v1/upload & POST /api/v1/upload/video
-const handleUpload = (req, res) => {
+const handleUpload = async (req, res) => {
   try {
     const file = req.file || (req.files && req.files[0]);
     if (!file) {
@@ -66,20 +67,40 @@ const handleUpload = (req, res) => {
     const protocol = req.protocol;
     const isVideo = file.mimetype.startsWith('video/') || ['.mp4', '.webm', '.mkv', '.mov', '.m4v', '.avi'].includes(path.extname(file.filename).toLowerCase());
 
-    const fileUrl = `${protocol}://${host}/uploads/${file.filename}`;
-    const relativeUrl = `/uploads/${file.filename}`;
+    let finalUrl = `${protocol}://${host}/uploads/${file.filename}`;
+    let relativeUrl = `/uploads/${file.filename}`;
+    let storageProvider = 'local';
+    let supabaseInfo = null;
 
-    console.log(`[Media Upload] Uploaded ${isVideo ? 'VIDEO' : 'MEDIA'}: ${file.filename} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`);
+    // Check if Supabase Storage is enabled and upload
+    if (supabaseService.isConfigured()) {
+      try {
+        const folder = isVideo ? 'videos' : (file.mimetype.startsWith('image/') ? 'images' : 'files');
+        const supabaseRes = await supabaseService.uploadFileFromDisk(file.path, folder);
+        if (supabaseRes && supabaseRes.url) {
+          finalUrl = supabaseRes.url;
+          storageProvider = 'supabase';
+          supabaseInfo = supabaseRes;
+          console.log(`[Supabase Upload] Successfully stored in Supabase Bucket "${supabaseRes.bucket}": ${supabaseRes.url}`);
+        }
+      } catch (sbErr) {
+        console.warn(`[Supabase Upload Warning] Failed to upload to Supabase, falling back to local: ${sbErr.message}`);
+      }
+    }
+
+    console.log(`[Media Upload] Uploaded ${isVideo ? 'VIDEO' : 'MEDIA'} [${storageProvider}]: ${file.filename} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`);
 
     return sendSuccess(res, isVideo ? 'Video uploaded successfully' : 'Media uploaded successfully', {
-      url: fileUrl,
+      url: finalUrl,
       relativeUrl: relativeUrl,
       filename: file.filename,
       originalName: file.originalname,
       size: file.size,
       sizeFormatted: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
       mimetype: file.mimetype,
-      isVideo: isVideo
+      isVideo: isVideo,
+      storage: storageProvider,
+      supabase: supabaseInfo
     });
   } catch (err) {
     console.error('[Upload Error]', err.message);

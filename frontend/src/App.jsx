@@ -8,10 +8,12 @@ import { WalletProvider } from './contexts/WalletContext';
 import { CartProvider } from './contexts/CartContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { SupabaseProvider } from './contexts/SupabaseContext';
 
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import AuthModal from './components/AuthModal';
+import MotionBackground from './components/MotionBackground';
 
 import Home from './pages/Home';
 import Movies from './pages/Movies';
@@ -39,19 +41,24 @@ import AdminPodcasts from './pages/Admin/AdminPodcasts';
 import AdminUsers from './pages/Admin/AdminUsers';
 import AdminPayments from './pages/Admin/AdminPayments';
 import AdminPayWay from './pages/Admin/AdminPayWay';
+import AdminSupabase from './pages/Admin/AdminSupabase';
 
 function App() {
   return (
     <Router>
       <ThemeProvider>
         <LanguageProvider>
-          <AuthProvider>
-            <WalletProvider>
-              <CartProvider>
-                <div className="min-h-screen bg-theme-bg text-gray-100 flex flex-col justify-between selection:bg-theme-gold selection:text-black transition-colors duration-300">
-              <div>
-                <Navbar />
-                <Routes>
+          <SupabaseProvider>
+            <AuthProvider>
+              <WalletProvider>
+                <CartProvider>
+                <div className="min-h-screen bg-theme-bg text-gray-100 flex flex-col justify-between selection:bg-theme-gold selection:text-black transition-colors duration-300 relative">
+                  {/* Live Animated Motion Background */}
+                  <MotionBackground opacity={0.45} />
+
+                  <div className="relative z-10">
+                    <Navbar />
+                    <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/movies" element={<Movies />} />
                   <Route path="/movie/:slug" element={<MovieDetails />} />
@@ -85,6 +92,7 @@ function App() {
                   <Route path="/admin/users" element={<AdminUsers />} />
                   <Route path="/admin/payments" element={<AdminPayments />} />
                   <Route path="/admin/payway" element={<AdminPayWay />} />
+                  <Route path="/admin/supabase" element={<AdminSupabase />} />
                 </Routes>
               </div>
               <Footer />
@@ -94,8 +102,9 @@ function App() {
           </CartProvider>
         </WalletProvider>
       </AuthProvider>
-    </LanguageProvider>
-  </ThemeProvider>
+    </SupabaseProvider>
+  </LanguageProvider>
+</ThemeProvider>
 </Router>
   );
 }
